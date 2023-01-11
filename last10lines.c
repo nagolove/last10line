@@ -64,24 +64,17 @@ char **read_last_n_lines(FILE *source, int n) {
             lines[line_index] = calloc(sizeof(char), line_len);
             //strcpy(lines[line_index], "hello");
         }
-        char *line_last = &lines[line_index][line_len - 1];
+        //char *line_last = &lines[line_index][line_len - 1];
+        char *tmp = lines[line_index];
 
         int ch_num = 0;
         while (chunk_last + 1 != chunk) {
             char ch = *chunk_last--;
             ch_num++;
-            //printf("%c", ch);
 
-            *line_last-- = ch;
-            if (*line_last == '\n') {
-                printf("ch_num %d\n", ch_num);
-                char *tmp = calloc(sizeof(char), ch_num + 1);
-                strcpy(tmp, line_last);
-                //printf("tmp '%s'\n", tmp);
-                //printf("line_last '%s'\n", line_last);
-                line_index++;
-                ch_num = 0;
-            }
+            *tmp = ch;
+            //printf("%c", ch);
+            printf("tmp '%s'\n", tmp);
         }
        
         //printf("\n");
