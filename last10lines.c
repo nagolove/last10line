@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFSIZE 32
-//#define BUFSIZE 32 * 1024 * 1024
+//#define BUFSIZE 32
+#define BUFSIZE 17
 
 char *rotate(char *s) {
     int len = strlen(s);
@@ -18,13 +18,6 @@ char *rotate(char *s) {
     }
     return s;
 }
-
-/*
-printf("%s\n", rotate(strdup("1")));
-printf("%s\n", rotate(strdup("123")));
-printf("%s\n", rotate(strdup("1234")));
-printf("%s\n", rotate(strdup("")));
-*/
 
 /*
 Считать последние n строк файла(по переводу каретки) и вернуть в виде 
@@ -38,6 +31,7 @@ char **read_last_n_lines(FILE *source, int n) {
     int line_index = 0;
 
     int read_size = BUFSIZE - 1;
+    char *tmp = NULL;
     fseek(source, 0, SEEK_END);
     int file_size = ftell(source);
     if (read_size > file_size) {
@@ -45,15 +39,22 @@ char **read_last_n_lines(FILE *source, int n) {
     }
 
     bool first = true;
+
+    // длина выделененой строки
+    int ch_num = 0;
+
     for(int i = 0; i < n; ++i) {
-        //printf("i = %d\n", i);
         char chunk[BUFSIZE] = {0};
         char *chunk_last = &chunk[BUFSIZE - 1];
         if (fseek(source, -read_size * (i + 1), SEEK_END) == -1) {
             break;
         }
-        fread(chunk, read_size, 1, source);
+        int read_bytes = fread(chunk, read_size, 1, source);
+        if (read_bytes != read_size) {
+            printf("some fread() error, %d != %d\n", read_bytes, read_size);
+        }
 
+        // удаление перевода последней строки в файле
         if (first && *(chunk_last - 1) == '\n') {
             first = false;
             chunk_last -= 2;
@@ -62,19 +63,45 @@ char **read_last_n_lines(FILE *source, int n) {
         if (!lines[line_index]) {
             line_len = BUFSIZE;
             lines[line_index] = calloc(sizeof(char), line_len);
-            //strcpy(lines[line_index], "hello");
+            tmp = lines[line_index];
         }
-        //char *line_last = &lines[line_index][line_len - 1];
-        char *tmp = lines[line_index];
 
-        int ch_num = 0;
         while (chunk_last + 1 != chunk) {
+            // ch - готовый символ, полученный из потока
             char ch = *chunk_last--;
+
+            if (ch == 0)
+                continue;
+
             ch_num++;
 
-            *tmp = ch;
+            // буфер закончился, увеличить размер буфера
+            if (ch_num + 1 == line_len) {
+                line_len *= 2;
+                // длина записанной строки
+                int offset = tmp - lines[line_index];
+                printf("offset %d\n", offset);
+                tmp = lines[line_index] = realloc(
+                    lines[line_index], sizeof(char) * line_len
+                );
+                //memset(tmp + offset + 1, 0, line_len - offset);
+                tmp += offset;
+            }
+
+            // новая строка, выделить новый буфер
+            if (ch == '\n') {
+                rotate(lines[line_index]);
+                line_index++;
+                line_len = BUFSIZE;
+                tmp = lines[line_index] = calloc(sizeof(char), line_len);
+                ch_num = 0;
+            } else {
+                // копирование символа в результирующую строку
+                *tmp++ = ch;
+            }
+
             //printf("%c", ch);
-            printf("tmp '%s'\n", tmp);
+            //printf("tmp '%s'\n", lines[line_index]);
         }
        
         //printf("\n");

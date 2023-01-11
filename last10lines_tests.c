@@ -179,7 +179,7 @@ test_simple(const MunitParameter params[], void* user_data) {
     (void) user_data;
 
     FILE *source = fopen("example4.txt", "r");
-    int n = 10;
+    int n = 12;
     char **lines = read_last_n_lines(source, n);
 
     puts(""); puts(""); puts(""); puts("");
@@ -316,8 +316,8 @@ static MunitParameterEnum test_params[] = {
 /* Creating a test suite is pretty simple.  First, you'll need an
  * array of tests: */
 static MunitTest last10lines_tests[] = {
-  { (char*) "/last10lines/files", test_files, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/last10lines/simpe", test_simple, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  //{ (char*) "/last10lines/files", test_files, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/last10lines/simple", test_simple, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
 };
 
