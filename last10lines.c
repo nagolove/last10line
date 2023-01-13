@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// XXX: Работает не с любым размером буфера. 
+// Из-за внутренней буферизации FILE?
+
 //#define BUFSIZE 32
 #define BUFSIZE 17
 
@@ -21,7 +24,7 @@ char *rotate(char *s) {
 
 /*
 Считать последние n строк файла(по переводу каретки) и вернуть в виде 
-динанического массива.
+динанического массива. Вызывать free() для массива и каждого его элемента.
  */
 char **read_last_n_lines(FILE *source, int n) {
     assert(source);
@@ -80,11 +83,9 @@ char **read_last_n_lines(FILE *source, int n) {
                 line_len *= 2;
                 // длина записанной строки
                 int offset = tmp - lines[line_index];
-                printf("offset %d\n", offset);
                 tmp = lines[line_index] = realloc(
                     lines[line_index], sizeof(char) * line_len
                 );
-                //memset(tmp + offset + 1, 0, line_len - offset);
                 tmp += offset;
             }
 
@@ -99,13 +100,7 @@ char **read_last_n_lines(FILE *source, int n) {
                 // копирование символа в результирующую строку
                 *tmp++ = ch;
             }
-
-            //printf("%c", ch);
-            //printf("tmp '%s'\n", lines[line_index]);
         }
-       
-        //printf("\n");
-        //printf("line '%s'\n", line);
     }
 
     return lines;
